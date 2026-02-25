@@ -42,52 +42,7 @@
     };
   }(Array.prototype.push));
 </script>
-
-<!-- ============================================================
-     ADOBE WEB SDK (Alloy) — Stub / Placeholder
-     Replace the stub below with the real Alloy CDN snippet
-     from your AEP Data Collection UI:
-
-     <script src="https://cdn1.adoberesources.net/alloy/2.x.x/alloy.min.js"></script>
-
-     Then configure with:
-       alloy("configure", {
-         datastreamId: "<YOUR_DATASTREAM_ID>",
-         orgId:        "<YOUR_IMS_ORG_ID>[at]AdobeOrg",
-         debugEnabled: true
-       });
-
-     The stub below intercepts every alloy() call and logs it so
-     you can validate XDM payloads without a real AEP connection.
-     ============================================================ -->
-<script data-cfasync="false">
-  // Alloy command queue stub — mirrors the real Alloy bootstrap pattern
-  !function(n, o) {
-    o = n.alloy = n.alloy || function() {
-      var q = arguments;
-      return new Promise(function(resolve, reject) {
-        // Log every call for practice/inspection (safe across all browsers)
-        try {
-          (console.groupCollapsed || console.group || console.log).call(console, '[ALLOY] alloy("' + q[0] + '")');
-          if (q[1]) console.log('Payload:', JSON.parse(JSON.stringify(q[1])));
-          if (console.groupEnd) console.groupEnd();
-        } catch(e) {}
-        resolve({ requestId: 'stub-' + Date.now() });
-      });
-    };
-  }(window);
-
-  // Configure Web SDK (stub — swap these values with real ones)
-  alloy("configure", {
-    datastreamId: "YOUR_DATASTREAM_ID",          // ← replace
-    orgId:        "YOUR_IMS_ORG" + AT + "AdobeOrg",   // ← replace (split to avoid CF)       // ← replace
-    debugEnabled: true,
-    clickCollectionEnabled: true,
-    onBeforeEventSend: function(options) {
-      // Last-chance hook to mutate the XDM before it leaves the browser
-      try { console.log('[ALLOY] onBeforeEventSend XDM:', options.xdm); } catch(e) {}
-    }
-  });
+<script src="https://assets.adobedtm.com/e72b4113c11a/8b27123c35b5/launch-1ff15300763a-development.min.js" async></script>
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
