@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DUKE — Premium Apparel</title>
+<!-- ============================================================
+     ADOBE DATA LAYER (ACDL) — Initialisation
+     Must be the very first script on the page so all subsequent
+     pushes are queued even before Alloy/Launch loads.
+     In production replace this with the Launch embed code.
+     ============================================================ -->
+<script data-cfasync="false">
+  // Global AT variable — split to prevent Cloudflare email obfuscation
+  window.AT = '@';
+
+  // Initialise the Adobe Client Data Layer array if not already present
+  window.adobeDataLayer = window.adobeDataLayer || [];
+
+  // Safe console wrappers — console.groupCollapsed is unavailable in some
+  // browsers and WebViews (e.g. iOS WKWebView, Samsung Internet, in-app browsers)
+  // Wrapping in try/catch prevents these environments from breaking ACDL pushes.
+  var safeGroup = function(label) {
+    try { (console.groupCollapsed || console.group || console.log).call(console, label); } catch(e) {}
+  };
+  var safeLog = function(obj) {
+    try { console.log(obj); } catch(e) {}
+  };
+  var safeGroupEnd = function() {
+    try { if (console.groupEnd) console.groupEnd(); } catch(e) {}
+  };
+
+  // Helper: push an event + state snapshot into the data layer
+  window.adobeDataLayer.push = (function(orig) {
+    return function(payload) {
+      orig.call(window.adobeDataLayer, payload);
+      try {
+        safeGroup('[ACDL] ' + (payload.event || payload['@type'] || 'state-update'));
+        safeLog(JSON.parse(JSON.stringify(payload)));
+        safeGroupEnd();
+      } catch(e) {}
+    };
+  }(Array.prototype.push));
+</script>
+
+<!-- ============================================================
+     ADOBE WEB SDK (Alloy) — Stub / Placeholder
+     Replace the stub below with the real Alloy CDN snippet
+     from your AEP Data Collection UI:
+
+     <script src="https://cdn1.adoberesources.net/alloy/2.x.x/alloy.min.js"></script>
+
+     Then configure with:
+       alloy("configure", {
+         datastreamId: "<YOUR_DATASTREAM_ID>",
+         orgId:        "<YOUR_IMS_ORG_ID>[at]AdobeOrg",
+         debugEnabled: true
+       });
+
+     The stub below intercepts every alloy() call and logs it so
+     you can validate XDM payloads without a real AEP connection.
+     ============================================================ -->
+<script data-cfasync="false">
+  // Alloy command queue stub — mirrors the real Alloy bootstrap pattern
+  !function(n, o) {
+    o = n.alloy = n.alloy || function() {
+      var q = arguments;
+      return new Promise(function(resolve, reject) {
+        // Log every call for practice/inspection (safe across all browsers)
+        try {
+          (console.groupCollapsed || console.group || console.log).call(console, '[ALLOY] alloy("' + q[0] + '")');
+          if (q[1]) console.log('Payload:', JSON.parse(JSON.stringify(q[1])));
+          if (console.groupEnd) console.groupEnd();
+        } catch(e) {}
+        resolve({ requestId: 'stub-' + Date.now() });
+      });
+    };
+  }(window);
+
+  // Configure Web SDK (stub — swap these values with real ones)
+  alloy("configure", {
+    datastreamId: "YOUR_DATASTREAM_ID",          // ← replace
+    orgId:        "YOUR_IMS_ORG" + AT + "AdobeOrg",   // ← replace (split to avoid CF)       // ← replace
+    debugEnabled: true,
+    clickCollectionEnabled: true,
+    onBeforeEventSend: function(options) {
+      // Last-chance hook to mutate the XDM before it leaves the browser
+      try { console.log('[ALLOY] onBeforeEventSend XDM:', options.xdm); } catch(e) {}
+    }
+  });
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0d0d0d;
+  --paper: #f5f2ee;
+  --cream: #ede9e3;
+  --accent: #c8a96e;
+  --accent-dark: #a8843e;
+  --muted: #888077;
+  --border: #d6d0c7;
+  --white: #ffffff;
+  --error: #c0392b;
+  --success: #27ae60;
+  --shadow: 0 4px 32px rgba(13,13,13,0.08);
+  --shadow-lg: 0 16px 64px rgba(13,13,13,0.14);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{max-width:100%;display:block}
+button{cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* UTILS */
+.hidden{display:none!important}
+.page{display:none;animation:fadeIn .4s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ==================== NAV ==================== */
+nav{position:sticky;top:0;z-index:100;background:var(--paper);border-bottom:1px solid var(--border);backdrop-filter:blur(8px)}
+.nav-inner{max-width:1400px;margin:0 auto;padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;letter-spacing:.08em;cursor:pointer}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{font-size:13px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);transition:color .2s;cursor:pointer}
+.nav-links a:hover,.nav-links a.active{color:var(--ink)}
+.nav-actions{display:flex;align-items:center;gap:20px}
+.nav-icon{width:40px;height:40px;border:none;background:none;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .2s;position:relative}
+.nav-icon:hover{background:var(--cream)}
+.nav-icon svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.5}
+.cart-badge{position:absolute;top:6px;right:6px;width:16px;height:16px;background:var(--accent);border-radius:50%;font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;color:var(--white)}
+
+/* ==================== HERO BANNER ==================== */
+.hero{height:90vh;min-height:600px;background:var(--ink);position:relative;overflow:hidden;display:flex;align-items:center}
+.hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0d0d0d 0%,#1a1a1a 40%,#0f0f0f 100%)}
+.hero-pattern{position:absolute;inset:0;opacity:.04;background-image:repeating-linear-gradient(0deg,transparent,transparent 60px,#fff 60px,#fff 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,#fff 60px,#fff 61px)}
+.hero-content{position:relative;max-width:1400px;margin:0 auto;padding:0 40px;width:100%}
+.hero-tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:24px}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(60px,8vw,120px);font-weight:300;line-height:.95;color:var(--white);margin-bottom:32px}
+.hero-title em{font-style:italic;color:var(--accent)}
+.hero-subtitle{font-size:16px;font-weight:300;color:rgba(255,255,255,.5);max-width:420px;line-height:1.7;margin-bottom:48px}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--white);padding:16px 36px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;border:none;transition:all .25s;border-radius:2px}
+.btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px)}
+.btn-outline{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--white);padding:15px 36px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:400;border:1px solid rgba(255,255,255,.3);transition:all .25s;border-radius:2px}
+.btn-outline:hover{border-color:var(--white);background:rgba(255,255,255,.05)}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap}
+.hero-scroll{position:absolute;bottom:48px;right:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.3);font-size:11px;letter-spacing:.15em;text-transform:uppercase}
+.hero-scroll-line{width:1px;height:60px;background:linear-gradient(to bottom,rgba(255,255,255,.3),transparent)}
+
+/* ==================== CATEGORY BANNERS ==================== */
+.section{padding:80px 0}
+.section-inner{max-width:1400px;margin:0 auto;padding:0 40px}
+.section-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4vw,52px);font-weight:300;line-height:1.15;margin-bottom:48px}
+
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.cat-grid-tall{grid-template-rows:400px 400px}
+.cat-card{position:relative;overflow:hidden;border-radius:3px;cursor:pointer;background:var(--ink)}
+.cat-card:nth-child(1){grid-row:span 2}
+.cat-card-img{width:100%;height:100%;min-height:280px;object-fit:cover;transition:transform .6s ease;opacity:.8}
+.cat-card:hover .cat-card-img{transform:scale(1.04);opacity:.9}
+.cat-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);display:flex;flex-direction:column;justify-content:flex-end;padding:32px}
+.cat-card-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.cat-card-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--white);margin-bottom:12px}
+.cat-card-cta{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px;transition:color .2s}
+.cat-card:hover .cat-card-cta{color:var(--accent)}
+.cat-card-cta::after{content:'→';transition:transform .2s}
+.cat-card:hover .cat-card-cta::after{transform:translateX(4px)}
+
+/* Colored placeholder banners */
+.banner-shirts{background:linear-gradient(135deg,#2c2c3e,#1a1a2e)}
+.banner-tshirts{background:linear-gradient(135deg,#1a2a1a,#0f1f0f)}
+.banner-pants{background:linear-gradient(135deg,#2a1a0f,#1a0f07)}
+.banner-shoes{background:linear-gradient(135deg,#1a0a1a,#2a1535)}
+.banner-shorts{background:linear-gradient(135deg,#0a1a2a,#051525)}
+.banner-joggers{background:linear-gradient(135deg,#1a1a10,#0f0f07)}
+.banner-accessories{background:linear-gradient(135deg,#2a1510,#1a0f08)}
+
+.banner-inner{width:100%;height:100%;min-height:280px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.banner-inner::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 30% 50%,rgba(200,169,110,.12),transparent 60%)}
+.banner-emoji{font-size:80px;opacity:.15;position:absolute;right:32px;bottom:20px;line-height:1}
+
+/* ==================== CATEGORY SWITCHER ==================== */
+.cat-switcher{background:var(--ink);padding:64px 0}
+.cat-switcher-inner{max-width:1400px;margin:0 auto;padding:0 40px}
+.cat-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:48px;overflow-x:auto}
+.cat-tab{padding:16px 28px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .2s}
+.cat-tab:hover{color:rgba(255,255,255,.8)}
+.cat-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.featured-products{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.feat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:3px;overflow:hidden;cursor:pointer;transition:all .25s}
+.feat-card:hover{background:rgba(255,255,255,.08);transform:translateY(-4px)}
+.feat-card-img{width:100%;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative;overflow:hidden}
+.feat-card-body{padding:20px}
+.feat-card-cat{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.feat-card-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--white);margin-bottom:8px}
+.feat-card-price{font-size:15px;font-weight:500;color:var(--white)}
+.feat-card-colors{display:flex;gap:6px;margin-top:10px}
+.color-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.2)}
+
+/* ==================== MARQUEE ==================== */
+.marquee-section{background:var(--accent);padding:18px 0;overflow:hidden}
+.marquee-track{display:flex;gap:0;animation:marquee 20s linear infinite;width:max-content}
+.marquee-item{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--white);padding:0 40px;display:flex;align-items:center;gap:40px;white-space:nowrap}
+.marquee-item::after{content:'✦';font-size:8px}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ==================== PROMO STRIP ==================== */
+.promo-strip{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.promo-item{flex:1;padding:28px 32px;display:flex;align-items:center;gap:16px;border-right:1px solid var(--border)}
+.promo-item:last-child{border-right:none}
+.promo-icon{width:40px;height:40px;flex-shrink:0;color:var(--accent)}
+.promo-icon svg{width:40px;height:40px;stroke:var(--accent);fill:none;stroke-width:1.2}
+.promo-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.promo-desc{font-size:12px;color:var(--muted)}
+
+/* ==================== NEWSLETTER ==================== */
+.newsletter{background:var(--cream);padding:80px 0;text-align:center}
+.newsletter-inner{max-width:560px;margin:0 auto;padding:0 40px}
+.newsletter h2{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;margin-bottom:12px}
+.newsletter p{font-size:15px;color:var(--muted);margin-bottom:32px;line-height:1.6}
+.nl-form{display:flex;gap:0;border:1px solid var(--border);background:var(--white);border-radius:2px;overflow:hidden}
+.nl-input{flex:1;padding:16px 20px;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;background:transparent}
+.nl-btn{padding:16px 24px;background:var(--ink);color:var(--white);border:none;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.nl-btn:hover{background:#2a2a2a}
+
+/* ==================== FOOTER ==================== */
+footer{background:var(--ink);color:rgba(255,255,255,.7);padding:64px 0 32px}
+.footer-inner{max-width:1400px;margin:0 auto;padding:0 40px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--white);margin-bottom:16px;letter-spacing:.05em}
+.footer-desc{font-size:13px;line-height:1.8;color:rgba(255,255,255,.4)}
+.footer-col h4{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-col ul li a{font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;transition:color .2s}
+.footer-col ul li a:hover{color:var(--white)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:32px;display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-size:12px;color:rgba(255,255,255,.3)}
+
+/* ==================== PLP ==================== */
+.plp-header{background:var(--ink);padding:64px 0 48px;text-align:center}
+.plp-header-tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.plp-header-title{font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:300;color:var(--white)}
+.plp-header-count{font-size:13px;color:rgba(255,255,255,.4);margin-top:8px}
+.plp-layout{max-width:1400px;margin:0 auto;padding:48px 40px;display:grid;grid-template-columns:260px 1fr;gap:48px}
+.filter-panel{position:sticky;top:88px;height:fit-content}
+.filter-section{margin-bottom:32px;padding-bottom:32px;border-bottom:1px solid var(--border)}
+.filter-section:last-child{border-bottom:none}
+.filter-title{font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:500;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.filter-chevron{transition:transform .2s}
+.filter-chevron.open{transform:rotate(180deg)}
+.filter-opts{display:flex;flex-direction:column;gap:10px}
+.filter-opt{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--muted);transition:color .2s}
+.filter-opt:hover,.filter-opt.active{color:var(--ink)}
+.filter-check{width:16px;height:16px;border:1.5px solid var(--border);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.filter-opt.active .filter-check{background:var(--ink);border-color:var(--ink)}
+.filter-opt.active .filter-check::after{content:'✓';font-size:10px;color:var(--white)}
+.color-filter{display:flex;flex-wrap:wrap;gap:8px}
+.color-filter-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;transition:transform .2s;border:2px solid transparent}
+.color-filter-dot:hover{transform:scale(1.15)}
+.color-filter-dot.active{border-color:var(--ink)}
+.price-range{display:flex;align-items:center;gap:12px;margin-top:12px}
+.price-range input{width:80px;padding:8px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:'DM Sans',sans-serif}
+.price-range span{color:var(--muted)}
+.plp-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+.active-filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter-tag{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--cream);border-radius:20px;font-size:12px;cursor:pointer}
+.filter-tag:hover{background:var(--border)}
+.filter-tag span{color:var(--muted)}
+.sort-select{padding:10px 16px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--white);cursor:pointer;outline:none}
+.product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.prod-card{cursor:pointer;group:true}
+.prod-card-img{aspect-ratio:3/4;background:var(--cream);border-radius:3px;overflow:hidden;position:relative;margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:64px;transition:transform .3s}
+.prod-card:hover .prod-card-img{transform:translateY(-4px)}
+.prod-card-img::after{content:attr(data-badge);position:absolute;top:12px;left:12px;background:var(--ink);color:var(--white);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:1px}
+.prod-wishlist{position:absolute;top:12px;right:12px;width:32px;height:32px;background:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border:none}
+.prod-card:hover .prod-wishlist{opacity:1}
+.prod-wishlist svg{width:16px;height:16px;stroke:var(--ink);fill:none;stroke-width:1.5}
+.prod-brand{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.prod-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:6px}
+.prod-meta{display:flex;justify-content:space-between;align-items:center}
+.prod-price{font-size:15px;font-weight:500}
+.prod-colors{display:flex;gap:5px}
+.prod-color-dot{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.15)}
+.prod-rating{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-top:6px}
+.prod-stars{color:var(--accent)}
+
+/* ==================== PDP ==================== */
+.pdp-layout{max-width:1400px;margin:0 auto;padding:48px 40px;display:grid;grid-template-columns:1fr 1fr;gap:80px}
+.pdp-gallery{display:flex;flex-direction:column;gap:12px}
+.pdp-main-img{aspect-ratio:3/4;background:var(--cream);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:120px;position:relative;overflow:hidden}
+.pdp-thumbs{display:flex;gap:8px}
+.pdp-thumb{width:80px;height:100px;background:var(--cream);border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid transparent;transition:border-color .2s}
+.pdp-thumb.active{border-color:var(--ink)}
+.pdp-info{padding-top:16px}
+.pdp-brand{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.pdp-name{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;line-height:1.15;margin-bottom:16px}
+.pdp-rating{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px;color:var(--muted)}
+.pdp-price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:28px}
+.pdp-price{font-size:28px;font-weight:500}
+.pdp-price-orig{font-size:18px;color:var(--muted);text-decoration:line-through}
+.pdp-discount{font-size:13px;color:var(--success);font-weight:500;padding:4px 8px;background:rgba(39,174,96,.1);border-radius:2px}
+.pdp-section-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.pdp-colors{display:flex;gap:10px;margin-bottom:28px}
+.pdp-color{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;position:relative}
+.pdp-color.active{border-color:var(--ink);transform:scale(1.1)}
+.pdp-color[title]::after{content:attr(title);position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;color:var(--muted)}
+.pdp-sizes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.pdp-size{min-width:52px;height:44px;padding:0 12px;border:1.5px solid var(--border);border-radius:2px;background:var(--white);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.pdp-size:hover{border-color:var(--ink)}
+.pdp-size.active{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.pdp-size.unavail{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+.pdp-qty-row{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.qty-ctrl{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:2px}
+.qty-btn{width:40px;height:44px;border:none;background:none;font-size:18px;cursor:pointer;color:var(--ink);transition:background .2s}
+.qty-btn:hover{background:var(--cream)}
+.qty-val{width:48px;text-align:center;font-size:15px;font-weight:500}
+.pdp-atc{flex:1;padding:16px;background:var(--ink);color:var(--white);border:none;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;cursor:pointer;border-radius:2px;transition:background .2s}
+.pdp-atc:hover{background:#2a2a2a}
+.pdp-wishlist-btn{width:52px;height:52px;border:1.5px solid var(--border);border-radius:2px;background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+.pdp-wishlist-btn:hover{border-color:var(--ink)}
+.pdp-wishlist-btn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.5}
+.pdp-actions{display:flex;gap:12px;margin-bottom:32px}
+.pdp-desc{font-size:14px;line-height:1.8;color:var(--muted);margin-bottom:28px}
+.pdp-accordions{border-top:1px solid var(--border)}
+.accordion{border-bottom:1px solid var(--border)}
+.accordion-header{padding:18px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:13px;font-weight:500;letter-spacing:.05em}
+.accordion-body{padding-bottom:18px;font-size:13px;line-height:1.8;color:var(--muted);display:none}
+.accordion.open .accordion-body{display:block}
+.accordion.open .accordion-header::after{content:'−'}
+.accordion-header::after{content:'+';font-size:18px;color:var(--muted)}
+
+/* ==================== CART ==================== */
+.cart-layout{max-width:1200px;margin:0 auto;padding:48px 40px;display:grid;grid-template-columns:1fr 360px;gap:48px}
+.cart-title{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;margin-bottom:32px}
+.cart-item{display:grid;grid-template-columns:100px 1fr auto;gap:20px;padding:24px 0;border-bottom:1px solid var(--border);align-items:start}
+.cart-item-img{width:100px;height:130px;background:var(--cream);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:36px}
+.cart-item-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:6px}
+.cart-item-meta{font-size:12px;color:var(--muted);margin-bottom:12px}
+.cart-item-qty{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:2px;width:fit-content}
+.cart-item-qty button{width:32px;height:32px;border:none;background:none;font-size:16px;cursor:pointer;color:var(--ink)}
+.cart-item-qty span{width:36px;text-align:center;font-size:13px;font-weight:500}
+.cart-item-price{font-size:18px;font-weight:500;text-align:right}
+.cart-item-remove{font-size:11px;color:var(--muted);text-decoration:underline;cursor:pointer;margin-top:8px;display:block;text-align:right;text-transform:uppercase;letter-spacing:.08em}
+.cart-summary{background:var(--cream);padding:32px;border-radius:3px;position:sticky;top:88px;height:fit-content}
+.cart-summary h3{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;margin-bottom:24px}
+.summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:14px;color:var(--muted)}
+.summary-row.total{font-size:18px;font-weight:600;color:var(--ink);border-top:1px solid var(--border);margin-top:16px;padding-top:16px}
+.promo-code{display:flex;gap:0;border:1px solid var(--border);border-radius:2px;overflow:hidden;margin:16px 0 24px}
+.promo-code input{flex:1;padding:12px 16px;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px}
+.promo-code button{padding:12px 16px;background:var(--ink);color:var(--white);border:none;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.checkout-btn{width:100%;padding:18px;background:var(--ink);color:var(--white);border:none;font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;cursor:pointer;border-radius:2px;transition:background .2s;margin-bottom:12px}
+.checkout-btn:hover{background:#2a2a2a}
+.checkout-btn.gold{background:var(--accent)}
+.checkout-btn.gold:hover{background:var(--accent-dark)}
+.cart-empty{text-align:center;padding:80px 20px;grid-column:1/-1}
+.cart-empty-icon{font-size:64px;margin-bottom:24px}
+.cart-empty h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:12px}
+.cart-empty p{color:var(--muted);font-size:14px;margin-bottom:28px}
+
+/* ==================== CHECKOUT ==================== */
+.checkout-layout{max-width:1100px;margin:0 auto;padding:48px 40px;display:grid;grid-template-columns:1fr 380px;gap:64px}
+.checkout-steps{display:flex;gap:0;margin-bottom:40px;border-bottom:1px solid var(--border)}
+.checkout-step{padding:16px 24px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.checkout-step.active{color:var(--ink);border-bottom-color:var(--ink)}
+.checkout-step.done{color:var(--success)}
+.checkout-step-num{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-grid.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.span2{grid-column:span 2}
+.form-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.form-input{padding:14px 16px;border:1.5px solid var(--border);border-radius:2px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;background:var(--white)}
+.form-input:focus{border-color:var(--ink)}
+.form-select{padding:14px 16px;border:1.5px solid var(--border);border-radius:2px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;background:var(--white);cursor:pointer}
+.section-divider{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;margin:32px 0 20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.delivery-options{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.delivery-opt{display:flex;align-items:center;gap:16px;padding:16px 20px;border:1.5px solid var(--border);border-radius:3px;cursor:pointer;transition:all .2s}
+.delivery-opt.active{border-color:var(--ink);background:var(--cream)}
+.delivery-opt input[type=radio]{accent-color:var(--ink)}
+.delivery-opt-info{flex:1}
+.delivery-opt-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.delivery-opt-desc{font-size:12px;color:var(--muted)}
+.delivery-opt-price{font-size:15px;font-weight:600}
+.order-summary-panel{background:var(--cream);padding:28px;border-radius:3px;position:sticky;top:88px;height:fit-content}
+.order-item-row{display:flex;gap:12px;margin-bottom:14px;align-items:center}
+.order-item-img{width:52px;height:66px;background:var(--border);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative}
+.order-item-badge{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(--ink);color:var(--white);border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.order-item-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.order-item-meta{font-size:11px;color:var(--muted)}
+.order-item-price{font-size:14px;font-weight:500;margin-left:auto}
+
+/* ==================== PAYMENT ==================== */
+.payment-methods{display:flex;gap:12px;margin-bottom:28px}
+.pay-method{flex:1;padding:16px;border:1.5px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:13px;transition:all .2s;background:var(--white)}
+.pay-method.active{border-color:var(--ink);background:var(--cream)}
+.card-preview{background:linear-gradient(135deg,#1a1a1a,#3a3a3a);border-radius:12px;padding:28px;margin-bottom:28px;color:var(--white);position:relative;overflow:hidden}
+.card-preview::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(200,169,110,.15)}
+.card-chip{width:36px;height:28px;background:linear-gradient(135deg,#d4a96e,#a8803a);border-radius:4px;margin-bottom:28px}
+.card-number{font-size:18px;letter-spacing:.15em;margin-bottom:24px;font-family:'Courier New',monospace}
+.card-row{display:flex;justify-content:space-between}
+.card-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;margin-bottom:4px}
+.card-val{font-size:13px;letter-spacing:.05em}
+.card-network{position:absolute;top:28px;right:28px;font-size:24px}
+.place-order-btn{width:100%;padding:20px;background:var(--accent);color:var(--white);border:none;font-size:14px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;cursor:pointer;border-radius:2px;transition:all .25s;margin-top:12px}
+.place-order-btn:hover{background:var(--accent-dark);transform:translateY(-1px)}
+.secure-badge{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;color:var(--muted);margin-top:12px}
+
+/* ==================== THANK YOU ==================== */
+.thankyou{min-height:70vh;display:flex;align-items:center;justify-content:center;padding:80px 40px;text-align:center}
+.thankyou-inner{max-width:600px}
+.ty-icon{width:80px;height:80px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 32px;animation:popIn .5s cubic-bezier(0.175,0.885,0.32,1.275) forwards}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.ty-icon svg{width:36px;height:36px;stroke:var(--white);fill:none;stroke-width:2}
+.ty-tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.ty-title{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;margin-bottom:16px;line-height:1.1}
+.ty-subtitle{font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:40px}
+.ty-order{background:var(--cream);padding:28px;border-radius:3px;margin-bottom:32px;text-align:left}
+.ty-order-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;color:var(--muted)}
+.ty-order-row:last-child{margin-bottom:0}
+.ty-order-row strong{color:var(--ink)}
+.ty-steps{display:flex;gap:24px;justify-content:center;margin-bottom:40px}
+.ty-step{flex:1;max-width:160px;text-align:center}
+.ty-step-icon{width:48px;height:48px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.ty-step-icon svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.5}
+.ty-step p{font-size:12px;color:var(--muted);line-height:1.5}
+.ty-step strong{font-size:13px;display:block;margin-bottom:4px}
+.ty-btns{display:flex;gap:12px;justify-content:center}
+
+/* ==================== TOAST ==================== */
+.toast{position:fixed;bottom:32px;right:32px;background:var(--ink);color:var(--white);padding:16px 24px;border-radius:3px;font-size:13px;display:flex;align-items:center;gap:12px;z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(0.175,0.885,0.32,1.275)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:2}
+
+/* ==================== BREADCRUMB ==================== */
+.breadcrumb{background:var(--cream);padding:12px 0;border-bottom:1px solid var(--border)}
+.breadcrumb-inner{max-width:1400px;margin:0 auto;padding:0 40px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.breadcrumb a{cursor:pointer;transition:color .2s}
+.breadcrumb a:hover{color:var(--ink)}
+.breadcrumb-sep{color:var(--border)}
+
+/* ==================== SCROLL TO TOP ==================== */
+.scroll-top{position:fixed;bottom:32px;left:32px;width:44px;height:44px;background:var(--ink);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(16px);transition:all .3s;z-index:100}
+.scroll-top.visible{opacity:1;transform:translateY(0)}
+.scroll-top svg{width:18px;height:18px;stroke:var(--white);fill:none;stroke-width:2}
+
+/* ==================== LOGIN PAGE ==================== */
+.login-wrap{min-height:calc(100vh - 72px);display:grid;grid-template-columns:1fr 1fr}
+.login-brand-panel{background:var(--ink);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:80px;position:relative;overflow:hidden}
+.login-brand-panel::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,.02) 60px,rgba(255,255,255,.02) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,.02) 60px,rgba(255,255,255,.02) 61px)}
+.login-brand-panel::after{content:'DUKE';position:absolute;bottom:-40px;right:-20px;font-family:'Cormorant Garamond',serif;font-size:240px;font-weight:600;color:rgba(255,255,255,.03);line-height:1;pointer-events:none}
+.login-brand-logo{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--white);letter-spacing:.1em;margin-bottom:48px}
+.login-brand-logo span{color:var(--accent)}
+.login-brand-title{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,4vw,56px);font-weight:300;color:var(--white);line-height:1.1;margin-bottom:20px}
+.login-brand-title em{font-style:italic;color:var(--accent)}
+.login-brand-sub{font-size:14px;color:rgba(255,255,255,.4);line-height:1.8;max-width:360px;margin-bottom:48px}
+.login-cart-preview{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:20px;width:100%;max-width:360px}
+.login-cart-preview-title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.login-cart-item-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.login-cart-item-row:last-child{margin-bottom:0}
+.login-cart-thumb{width:40px;height:50px;background:rgba(255,255,255,.08);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.login-cart-item-name{font-size:12px;color:rgba(255,255,255,.7);flex:1}
+.login-cart-item-price{font-size:12px;font-weight:500;color:var(--accent)}
+
+.login-form-panel{background:var(--paper);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:80px 60px}
+.login-form-box{width:100%;max-width:400px}
+.login-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:36px}
+.login-tab{flex:1;padding:14px;text-align:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.login-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.login-form-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:6px}
+.login-form-sub{font-size:13px;color:var(--muted);margin-bottom:32px;line-height:1.6}
+.login-form-group{margin-bottom:18px}
+.login-form-label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.login-form-input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:2px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;background:var(--white)}
+.login-form-input:focus{border-color:var(--ink)}
+.login-form-input.error{border-color:var(--error)}
+.login-error-msg{font-size:11px;color:var(--error);margin-top:4px;display:none}
+.login-error-msg.show{display:block}
+.login-submit-btn{width:100%;padding:16px;background:var(--ink);color:var(--white);border:none;font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;cursor:pointer;border-radius:2px;transition:all .25s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px}
+.login-submit-btn:hover{background:#2a2a2a}
+.login-submit-btn.loading{opacity:.7;pointer-events:none}
+.login-divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--muted);font-size:12px}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.login-guest-btn{width:100%;padding:14px;background:transparent;color:var(--ink);border:1.5px solid var(--border);font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s}
+.login-guest-btn:hover{border-color:var(--ink)}
+.login-forgot{font-size:12px;color:var(--accent);text-align:right;cursor:pointer;text-decoration:underline;margin-top:-10px;margin-bottom:18px;display:block}
+.login-terms{font-size:11px;color:var(--muted);text-align:center;margin-top:20px;line-height:1.6}
+.login-terms a{color:var(--accent);cursor:pointer}
+
+/* Identity badge shown after login */
+.identity-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);color:var(--success);padding:8px 14px;border-radius:20px;font-size:12px;font-weight:500;margin-bottom:20px}
+.identity-badge svg{width:14px;height:14px;stroke:var(--success);fill:none;stroke-width:2}
+
+@media(max-width:900px){
+  .login-wrap{grid-template-columns:1fr}
+  .login-brand-panel{display:none}
+  .login-form-panel{padding:48px 24px}
+}
+
+/* ==================== END LOGIN ==================== */
+
+@media(max-width:900px){
+  .product-grid{grid-template-columns:repeat(2,1fr)}
+  .plp-layout{grid-template-columns:1fr}
+  .cart-layout,.checkout-layout,.pdp-layout{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:1fr 1fr}
+  .cat-card:nth-child(1){grid-row:span 1}
+  .featured-products{grid-template-columns:repeat(2,1fr)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .promo-strip{flex-direction:column}
+  .promo-item{border-right:none;border-bottom:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="goTo('home')">DUKE<span>.</span></div>
+    <ul class="nav-links">
+      <li><a onclick="goTo('home')" id="nav-home">Home</a></li>
+      <li><a onclick="goToPLP('Shirts')" id="nav-shop">Shop</a></li>
+      <li><a onclick="goToPLP('Shirts')">Collections</a></li>
+      <li><a>About</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button type="button" class="nav-icon" title="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button type="button" class="nav-icon" title="Wishlist">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      <button type="button" class="nav-icon" title="Cart" onclick="goTo('cart')">
+        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-badge" id="cart-badge">0</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ==================== HOME PAGE ==================== -->
+<div class="page" id="page-home">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-pattern"></div>
+    <div class="hero-content">
+      <p class="hero-tag">New Collection — Spring 2025</p>
+      <h1 class="hero-title">Dress<br>with<br><em>Duke.</em></h1>
+      <p class="hero-subtitle">Duke — precision-crafted essentials for the modern individual. Where form meets purpose.</p>
+      <div class="hero-btns">
+        <button type="button" class="btn-primary" onclick="goToPLP('Shirts')">Explore Collection</button>
+        <button type="button" class="btn-outline" onclick="scrollToCats()">Shop by Category</button>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="hero-scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="marquee-section">
+    <div class="marquee-track">
+      <span class="marquee-item">Premium Craftsmanship</span>
+      <span class="marquee-item">Free Shipping Over ₹999</span>
+      <span class="marquee-item">Sustainable Materials</span>
+      <span class="marquee-item">Easy 30-Day Returns</span>
+      <span class="marquee-item">New Arrivals Weekly</span>
+      <span class="marquee-item">Premium Craftsmanship</span>
+      <span class="marquee-item">Free Shipping Over ₹999</span>
+      <span class="marquee-item">Sustainable Materials</span>
+      <span class="marquee-item">Easy 30-Day Returns</span>
+      <span class="marquee-item">New Arrivals Weekly</span>
+    </div>
+  </div>
+
+  <!-- Category Banners -->
+  <section class="section" id="categories-section">
+    <div class="section-inner">
+      <p class="section-label">Shop by Category</p>
+      <h2 class="section-title">Curated for Every<br>Occasion</h2>
+      <div class="cat-grid cat-grid-tall">
+        <div class="cat-card" onclick="goToPLP('Shirts')">
+          <div class="banner-inner banner-shirts" style="min-height:100%;height:100%">
+            <div class="banner-emoji">👔</div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%)"></div>
+          </div>
+          <div class="cat-card-overlay">
+            <p class="cat-card-label">New In</p>
+            <h3 class="cat-card-title">Shirts</h3>
+            <span class="cat-card-cta">View All</span>
+          </div>
+        </div>
+        <div class="cat-card" onclick="goToPLP('T-Shirts')">
+          <div class="banner-inner banner-tshirts">
+            <div class="banner-emoji">👕</div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%)"></div>
+          </div>
+          <div class="cat-card-overlay">
+            <p class="cat-card-label">Essentials</p>
+            <h3 class="cat-card-title">T-Shirts</h3>
+            <span class="cat-card-cta">View All</span>
+          </div>
+        </div>
+        <div class="cat-card" onclick="goToPLP('Pants')">
+          <div class="banner-inner banner-pants">
+            <div class="banner-emoji">👖</div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%)"></div>
+          </div>
+          <div class="cat-card-overlay">
+            <p class="cat-card-label">Tailored</p>
+            <h3 class="cat-card-title">Pants</h3>
+            <span class="cat-card-cta">View All</span>
+          </div>
+        </div>
+        <div class="cat-card" onclick="goToPLP('Shoes')">
+          <div class="banner-inner banner-shoes">
+            <div class="banner-emoji">👟</div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%)"></div>
+          </div>
+          <div class="cat-card-overlay">
+            <p class="cat-card-label">Step Up</p>
+            <h3 class="cat-card-title">Shoes</h3>
+            <span class="cat-card-cta">View All</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Small Banners Row -->
+  <section class="section" style="padding-top:0">
+    <div class="section-inner">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <div class="cat-card" onclick="goToPLP('Shorts')">
+          <div class="banner-inner banner-shorts" style="min-height:220px">
+            <div class="banner-emoji" style="font-size:60px">🩲</div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%)"></div>
+          </div>
+          <div class="cat-card-overlay" style="padding:20px">
+            <p class="cat-card-label">Active</p>
+            <h3 class="cat-card-title" style="font-size:24px">Shorts</h3>
+            <span class="cat-card-cta">View All</span>
+          </div>
+        </div>
+        <div class="cat-card" onclick="goToPLP('Joggers')">
+          <div class="banner-inner banner-joggers" style="min-height:220px">
+            <div class="banner-emoji" style="font-size:60px">🏃</div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%)"></div>
+          </div>
+          <div class="cat-card-overlay" style="padding:20px">
+            <p class="cat-card-label">Comfort</p>
+            <h3 class="cat-card-title" style="font-size:24px">Joggers</h3>
+            <span class="cat-card-cta">View All</span>
+          </div>
+        </div>
+        <div class="cat-card" onclick="goToPLP('Accessories')">
+          <div class="banner-inner banner-accessories" style="min-height:220px">
+            <div class="banner-emoji" style="font-size:60px">🎒</div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%)"></div>
+          </div>
+          <div class="cat-card-overlay" style="padding:20px">
+            <p class="cat-card-label">Finishing</p>
+            <h3 class="cat-card-title" style="font-size:24px">Accessories</h3>
+            <span class="cat-card-cta">View All</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Switcher -->
+  <section class="cat-switcher">
+    <div class="cat-switcher-inner">
+      <p class="section-label" style="color:rgba(255,255,255,.4)">Featured Products</p>
+      <h2 class="section-title" style="color:var(--white);margin-bottom:36px">Trending This Week</h2>
+      <div class="cat-tabs" id="cat-tabs">
+        <button type="button" class="cat-tab active" onclick="switchCat('Shirts')">Shirts</button>
+        <button type="button" class="cat-tab" onclick="switchCat('T-Shirts')">T-Shirts</button>
+        <button type="button" class="cat-tab" onclick="switchCat('Pants')">Pants</button>
+        <button type="button" class="cat-tab" onclick="switchCat('Shoes')">Shoes</button>
+        <button type="button" class="cat-tab" onclick="switchCat('Shorts')">Shorts</button>
+        <button type="button" class="cat-tab" onclick="switchCat('Joggers')">Joggers</button>
+        <button type="button" class="cat-tab" onclick="switchCat('Accessories')">Accessories</button>
+      </div>
+      <div class="featured-products" id="featured-products"></div>
+    </div>
+  </section>
+
+  <!-- Promo Strip -->
+  <div class="promo-strip">
+    <div class="promo-item">
+      <div class="promo-icon">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+      </div>
+      <div>
+        <p class="promo-title">Free Shipping</p>
+        <p class="promo-desc">On orders over ₹999</p>
+      </div>
+    </div>
+    <div class="promo-item">
+      <div class="promo-icon">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </div>
+      <div>
+        <p class="promo-title">Easy Returns</p>
+        <p class="promo-desc">30-day hassle-free returns</p>
+      </div>
+    </div>
+    <div class="promo-item">
+      <div class="promo-icon">
+        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div>
+        <p class="promo-title">Secure Payments</p>
+        <p class="promo-desc">256-bit SSL encryption</p>
+      </div>
+    </div>
+    <div class="promo-item">
+      <div class="promo-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <p class="promo-title">Expert Support</p>
+        <p class="promo-desc">Mon-Sat, 9AM–7PM</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Newsletter -->
+  <section class="newsletter">
+    <div class="newsletter-inner">
+      <p class="section-label">Stay in the Loop</p>
+      <h2>Exclusive Access,<br>Early Drops.</h2>
+      <p>Subscribe for new arrivals, style inspiration, and members-only offers.</p>
+      <div class="nl-form">
+        <input class="nl-input" type="email" placeholder="your [at] email.com">
+        <button type="button" class="nl-btn">Subscribe</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">DUKE.</div>
+          <p class="footer-desc">Precision-crafted apparel for those who refuse to compromise between comfort and character.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Shop</h4>
+          <ul>
+            <li><a onclick="goToPLP('Shirts')">Shirts</a></li>
+            <li><a onclick="goToPLP('T-Shirts')">T-Shirts</a></li>
+            <li><a onclick="goToPLP('Pants')">Pants</a></li>
+            <li><a onclick="goToPLP('Shoes')">Shoes</a></li>
+            <li><a onclick="goToPLP('Accessories')">Accessories</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Help</h4>
+          <ul>
+            <li><a>Size Guide</a></li>
+            <li><a>Shipping Info</a></li>
+            <li><a>Returns</a></li>
+            <li><a>Track Order</a></li>
+            <li><a>Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>About</h4>
+          <ul>
+            <li><a>Our Story</a></li>
+            <li><a>Sustainability</a></li>
+            <li><a>Careers</a></li>
+            <li><a>Press</a></li>
+            <li><a>Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2025 Duke. All rights reserved.</span>
+        <span class="footer-copy">Made with intention.</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ==================== PLP PAGE ==================== -->
+<div class="page" id="page-plp">
+  <div class="plp-header">
+    <p class="plp-header-tag" id="plp-tag">Category</p>
+    <h1 class="plp-header-title" id="plp-title">Products</h1>
+    <p class="plp-header-count" id="plp-count">10 Products</p>
+  </div>
+  <div class="breadcrumb">
+    <div class="breadcrumb-inner">
+      <a onclick="goTo('home')">Home</a>
+      <span class="breadcrumb-sep">›</span>
+      <a>Shop</a>
+      <span class="breadcrumb-sep">›</span>
+      <span id="plp-breadcrumb">Category</span>
+    </div>
+  </div>
+  <div class="plp-layout">
+    <!-- Filters -->
+    <aside class="filter-panel">
+      <div class="filter-section">
+        <div class="filter-title" onclick="toggleFilter(this)">
+          Price Range
+          <span class="filter-chevron open">▾</span>
+        </div>
+        <div class="filter-opts">
+          <label class="filter-opt active" onclick="toggleFilterOpt(this)">
+            <span class="filter-check"></span>Under ₹999
+          </label>
+          <label class="filter-opt" onclick="toggleFilterOpt(this)">
+            <span class="filter-check"></span>₹999 – ₹1,999
+          </label>
+          <label class="filter-opt" onclick="toggleFilterOpt(this)">
+            <span class="filter-check"></span>₹1,999 – ₹3,499
+          </label>
+          <label class="filter-opt" onclick="toggleFilterOpt(this)">
+            <span class="filter-check"></span>Above ₹3,499
+          </label>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title" onclick="toggleFilter(this)">
+          Color
+          <span class="filter-chevron open">▾</span>
+        </div>
+        <div class="color-filter">
+          <div class="color-filter-dot active" style="background:#1a1a1a" title="Black" onclick="toggleColorFilter(this)"></div>
+          <div class="color-filter-dot" style="background:#f5f5f5;border:1px solid #ddd" title="White" onclick="toggleColorFilter(this)"></div>
+          <div class="color-filter-dot" style="background:#4a5568" title="Slate" onclick="toggleColorFilter(this)"></div>
+          <div class="color-filter-dot" style="background:#8B4513" title="Brown" onclick="toggleColorFilter(this)"></div>
+          <div class="color-filter-dot" style="background:#2d5a27" title="Forest" onclick="toggleColorFilter(this)"></div>
+          <div class="color-filter-dot" style="background:#c0392b" title="Rust" onclick="toggleColorFilter(this)"></div>
+          <div class="color-filter-dot" style="background:#c8a96e" title="Camel" onclick="toggleColorFilter(this)"></div>
+          <div class="color-filter-dot" style="background:#1e3a5f" title="Navy" onclick="toggleColorFilter(this)"></div>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title" onclick="toggleFilter(this)">
+          Size
+          <span class="filter-chevron open">▾</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="pdp-size active" style="min-width:40px;height:36px">XS</button>
+          <button type="button" class="pdp-size" style="min-width:40px;height:36px">S</button>
+          <button type="button" class="pdp-size" style="min-width:40px;height:36px">M</button>
+          <button type="button" class="pdp-size" style="min-width:40px;height:36px">L</button>
+          <button type="button" class="pdp-size" style="min-width:40px;height:36px">XL</button>
+          <button type="button" class="pdp-size" style="min-width:40px;height:36px">XXL</button>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title" onclick="toggleFilter(this)">
+          Rating
+          <span class="filter-chevron open">▾</span>
+        </div>
+        <div class="filter-opts">
+          <label class="filter-opt" onclick="toggleFilterOpt(this)">
+            <span class="filter-check"></span>★★★★★ 5 Stars
+          </label>
+          <label class="filter-opt active" onclick="toggleFilterOpt(this)">
+            <span class="filter-check"></span>★★★★ & Above
+          </label>
+          <label class="filter-opt" onclick="toggleFilterOpt(this)">
+            <span class="filter-check"></span>★★★ & Above
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Products -->
+    <main>
+      <div class="plp-toolbar">
+        <div class="active-filters">
+          <span class="filter-tag">Black <span>✕</span></span>
+          <span class="filter-tag">4★ & Above <span>✕</span></span>
+          <span style="font-size:12px;color:var(--muted);align-self:center;cursor:pointer;text-decoration:underline">Clear all</span>
+        </div>
+        <select class="sort-select" onchange="sortProducts(this.value)">
+          <option value="featured">Sort: Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="newest">Newest First</option>
+          <option value="rating">Top Rated</option>
+        </select>
+      </div>
+      <div class="product-grid" id="product-grid"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ==================== PDP PAGE ==================== -->
+<div class="page" id="page-pdp">
+  <div class="breadcrumb">
+    <div class="breadcrumb-inner">
+      <a onclick="goTo('home')">Home</a>
+      <span class="breadcrumb-sep">›</span>
+      <a id="pdp-cat-link">Category</a>
+      <span class="breadcrumb-sep">›</span>
+      <span id="pdp-name-bc">Product</span>
+    </div>
+  </div>
+  <div class="pdp-layout">
+    <div class="pdp-gallery">
+      <div class="pdp-main-img" id="pdp-main-img"><span id="pdp-emoji">👕</span></div>
+      <div class="pdp-thumbs" id="pdp-thumbs"></div>
+    </div>
+    <div class="pdp-info">
+      <p class="pdp-brand" id="pdp-brand">FORM</p>
+      <h1 class="pdp-name" id="pdp-name">Product Name</h1>
+      <div class="pdp-rating">
+        <span class="prod-stars" id="pdp-stars">★★★★★</span>
+        <span id="pdp-rating-count">(128 reviews)</span>
+      </div>
+      <div class="pdp-price-row">
+        <span class="pdp-price" id="pdp-price">₹1,499</span>
+        <span class="pdp-price-orig" id="pdp-price-orig"></span>
+        <span class="pdp-discount hidden" id="pdp-discount"></span>
+      </div>
+      <p class="pdp-section-label">Select Color</p>
+      <div class="pdp-colors" id="pdp-colors"></div>
+      <p class="pdp-section-label">Select Size <a style="float:right;font-size:11px;color:var(--accent);text-decoration:underline;cursor:pointer">Size Guide</a></p>
+      <div class="pdp-sizes" id="pdp-sizes">
+        <button type="button" class="pdp-size" onclick="selectSize(this)">XS</button>
+        <button type="button" class="pdp-size active" onclick="selectSize(this)">S</button>
+        <button type="button" class="pdp-size" onclick="selectSize(this)">M</button>
+        <button type="button" class="pdp-size" onclick="selectSize(this)">L</button>
+        <button type="button" class="pdp-size" onclick="selectSize(this)">XL</button>
+        <button type="button" class="pdp-size unavail" onclick="selectSize(this)">XXL</button>
+      </div>
+      <div class="pdp-qty-row">
+        <div class="qty-ctrl">
+          <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+          <span class="qty-val" id="pdp-qty">1</span>
+          <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+        <div class="pdp-actions" style="flex:1;margin-bottom:0">
+          <button type="button" class="pdp-atc" onclick="addToCartFromPDP()">Add to Cart</button>
+          <button type="button" class="pdp-wishlist-btn">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="pdp-desc" id="pdp-desc">Premium quality craftsmanship with attention to every detail. This piece combines modern design with timeless style, making it perfect for any occasion. Crafted from sustainably sourced materials.</p>
+      <div class="pdp-accordions">
+        <div class="accordion open">
+          <div class="accordion-header" onclick="toggleAccordion(this)">Product Details</div>
+          <div class="accordion-body" id="pdp-details">Material: 100% Organic Cotton<br>Fit: Regular<br>Care: Machine wash cold<br>Country of Origin: India</div>
+        </div>
+        <div class="accordion">
+          <div class="accordion-header" onclick="toggleAccordion(this)">Size & Fit</div>
+          <div class="accordion-body">Model is 6'1" and wears size M. True to size. For a looser fit, we recommend sizing up.</div>
+        </div>
+        <div class="accordion">
+          <div class="accordion-header" onclick="toggleAccordion(this)">Shipping & Returns</div>
+          <div class="accordion-body">Free shipping on orders above ₹999. Delivered in 3–5 business days. Easy 30-day returns — just drop it back in any India Post box.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CART PAGE ==================== -->
+<div class="page" id="page-cart">
+  <div style="max-width:1200px;margin:0 auto;padding:48px 40px 16px">
+    <h1 class="cart-title">Your Cart</h1>
+  </div>
+  <div class="cart-layout" id="cart-layout"></div>
+</div>
+
+<!-- ==================== LOGIN PAGE ==================== -->
+<div class="page" id="page-login">
+  <div class="login-wrap">
+
+    <!-- Left — Brand panel with cart preview -->
+    <div class="login-brand-panel">
+      <div class="login-brand-logo">DUKE<span>.</span></div>
+      <h2 class="login-brand-title">One step<br>closer to<br><em>your order.</em></h2>
+      <p class="login-brand-sub">Sign in to track orders, save your preferences, and checkout faster. Your cart is saved and ready.</p>
+      <div class="login-cart-preview">
+        <p class="login-cart-preview-title">Your cart is waiting</p>
+        <div id="login-cart-preview-items"></div>
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:14px;padding-top:14px;display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:rgba(255,255,255,.5)">Total</span>
+          <span style="color:var(--accent);font-weight:600" id="login-cart-total">₹0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right — Login / Register form -->
+    <div class="login-form-panel">
+      <div class="login-form-box">
+
+        <!-- Identity badge — shown after successful login -->
+        <div class="identity-badge hidden" id="identity-badge">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="identity-badge-text">Signed in as USER-001</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="login-tabs">
+          <button type="button" class="login-tab active" onclick="switchLoginTab('signin',this)">Sign In</button>
+          <button type="button" class="login-tab" onclick="switchLoginTab('register',this)">Create Account</button>
+        </div>
+
+        <!-- SIGN IN FORM -->
+        <div id="form-signin">
+          <h2 class="login-form-title">Welcome back</h2>
+          <p class="login-form-sub">Sign in to continue to checkout.</p>
+
+          <!-- Demo hint — remove in production -->
+          <div style="background:var(--cream);border:1px solid var(--border);border-radius:3px;padding:12px 14px;margin-bottom:20px;font-size:12px;line-height:1.7">
+            <strong style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)">Demo Credentials</strong><br>
+            <span style="color:var(--muted)">Password for all accounts:</span> <code style="background:var(--white);padding:1px 6px;border-radius:2px;font-size:11px">duke@2025</code><br>
+            <span style="color:var(--muted)">Try:</span>
+            <span style="cursor:pointer;color:var(--accent);text-decoration:underline" onclick="document.getElementById('signin-email').value='arjun' + AT + 'example.test'">arjun</span> ·
+            <span style="cursor:pointer;color:var(--accent);text-decoration:underline" onclick="document.getElementById('signin-email').value='priya' + AT + 'example.test'">priya</span> ·
+            <span style="cursor:pointer;color:var(--accent);text-decoration:underline" onclick="document.getElementById('signin-email').value='sneha' + AT + 'example.test'">sneha</span> ·
+            <span style="cursor:pointer;color:var(--accent);text-decoration:underline" onclick="document.getElementById('signin-email').value='raj'   + AT + 'example.test'">raj</span> ·
+            <span style="cursor:pointer;color:var(--accent);text-decoration:underline" onclick="document.getElementById('signin-email').value='rahul' + AT + 'example.test'">rahul</span>
+          </div>
+
+          <div class="login-form-group">
+            <label class="login-form-label">Email Address</label>
+            <input class="login-form-input" type="email" id="signin-email" placeholder="you [at] example.test">
+          </div>
+          <div class="login-form-group">
+            <label class="login-form-label">Password</label>
+            <input class="login-form-input" type="password" id="signin-password" placeholder="••••••••">
+            <p class="login-error-msg" id="signin-error">Invalid email or password. Try: arjun [at] example.test / duke[at]2025</p>
+          </div>
+          <span class="login-forgot">Forgot password?</span>
+
+          <button type="button" class="login-submit-btn" id="signin-btn" onclick="handleSignIn()">
+            <span>Sign In & Continue</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </button>
+
+          <div class="login-divider">or</div>
+
+          <button type="button" class="login-guest-btn" onclick="handleGuestCheckout()">Continue as Guest</button>
+          <p class="login-terms">By continuing you agree to Duke's <a>Terms of Service</a> and <a>Privacy Policy</a></p>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="form-register" class="hidden">
+          <h2 class="login-form-title">Create account</h2>
+          <p class="login-form-sub">Join Duke for faster checkout and exclusive offers.</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="login-form-group">
+              <label class="login-form-label">First Name</label>
+              <input class="login-form-input" type="text" id="reg-fname" placeholder="Arjun">
+            </div>
+            <div class="login-form-group">
+              <label class="login-form-label">Last Name</label>
+              <input class="login-form-input" type="text" id="reg-lname" placeholder="Sharma">
+            </div>
+          </div>
+          <div class="login-form-group">
+            <label class="login-form-label">Email Address</label>
+            <input class="login-form-input" type="email" id="reg-email" placeholder="you [at] example.test">
+          </div>
+          <div class="login-form-group">
+            <label class="login-form-label">Password</label>
+            <input class="login-form-input" type="password" id="reg-password" placeholder="Min. 8 characters">
+          </div>
+          <div class="login-form-group">
+            <label class="login-form-label">Phone Number</label>
+            <input class="login-form-input" type="tel" id="reg-phone" placeholder="+91 98765 43210">
+          </div>
+
+          <button type="button" class="login-submit-btn" onclick="handleRegister()">
+            <span>Create Account & Continue</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </button>
+          <p class="login-terms">By creating an account you agree to Duke's <a>Terms of Service</a> and <a>Privacy Policy</a></p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CHECKOUT — DELIVERY ==================== -->
+<div class="page" id="page-checkout">
+  <div class="checkout-layout">
+    <div>
+      <div class="checkout-steps">
+        <div class="checkout-step done">
+          <span class="checkout-step-num">✓</span> Cart
+        </div>
+        <div class="checkout-step done">
+          <span class="checkout-step-num">✓</span> Login
+        </div>
+        <div class="checkout-step active">
+          <span class="checkout-step-num">3</span> Delivery
+        </div>
+        <div class="checkout-step">
+          <span class="checkout-step-num">4</span> Payment
+        </div>
+        <div class="checkout-step">
+          <span class="checkout-step-num">5</span> Confirm
+        </div>
+      </div>
+      <h2 class="section-divider" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300">Contact Information</h2>
+      <!-- Identity status bar — populated after login -->
+      <div id="checkout-identity-bar" style="display:none;margin-bottom:20px"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input class="form-input" type="text" placeholder="Arjun" id="fname">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input class="form-input" type="text" placeholder="Sharma">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" placeholder="you [at] example.test">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" type="tel" placeholder="+91 98765 43210">
+        </div>
+      </div>
+      <h2 class="section-divider" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300">Delivery Address</h2>
+      <div class="form-grid">
+        <div class="form-group span2">
+          <label class="form-label">Address Line 1</label>
+          <input class="form-input" type="text" placeholder="Street address, flat number">
+        </div>
+        <div class="form-group span2">
+          <label class="form-label">Address Line 2 (Optional)</label>
+          <input class="form-input" type="text" placeholder="Colony, Landmark">
+        </div>
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input class="form-input" type="text" placeholder="Mumbai">
+        </div>
+        <div class="form-group">
+          <label class="form-label">State</label>
+          <select class="form-select">
+            <option>Maharashtra</option>
+            <option>Tamil Nadu</option>
+            <option>Karnataka</option>
+            <option>Delhi</option>
+            <option>Gujarat</option>
+            <option>Rajasthan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">PIN Code</label>
+          <input class="form-input" type="text" placeholder="400001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <select class="form-select"><option>India</option></select>
+        </div>
+      </div>
+      <h2 class="section-divider" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300">Delivery Method</h2>
+      <div class="delivery-options">
+        <label class="delivery-opt active" onclick="selectDelivery(this)">
+          <input type="radio" name="delivery" checked>
+          <div class="delivery-opt-info">
+            <p class="delivery-opt-name">Standard Delivery</p>
+            <p class="delivery-opt-desc">3–5 business days · India Post / Delhivery</p>
+          </div>
+          <span class="delivery-opt-price">Free</span>
+        </label>
+        <label class="delivery-opt" onclick="selectDelivery(this)">
+          <input type="radio" name="delivery">
+          <div class="delivery-opt-info">
+            <p class="delivery-opt-name">Express Delivery</p>
+            <p class="delivery-opt-desc">1–2 business days · BlueDart</p>
+          </div>
+          <span class="delivery-opt-price">₹99</span>
+        </label>
+        <label class="delivery-opt" onclick="selectDelivery(this)">
+          <input type="radio" name="delivery">
+          <div class="delivery-opt-info">
+            <p class="delivery-opt-name">Same Day Delivery</p>
+            <p class="delivery-opt-desc">Available in select cities · Before 8PM</p>
+          </div>
+          <span class="delivery-opt-price">₹199</span>
+        </label>
+      </div>
+      <button type="button" class="checkout-btn" onclick="fireCheckoutStep(2,'delivery');goTo('payment')">Continue to Payment →</button>
+    </div>
+    <div class="order-summary-panel">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin-bottom:20px">Order Summary</h3>
+      <div id="checkout-items"></div>
+      <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
+        <div class="summary-row"><span>Subtotal</span><span id="co-subtotal">₹0</span></div>
+        <div class="summary-row"><span>Shipping</span><span>Free</span></div>
+        <div class="summary-row"><span>GST (18%)</span><span id="co-gst">₹0</span></div>
+        <div class="summary-row total"><span>Total</span><span id="co-total">₹0</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAYMENT PAGE ==================== -->
+<div class="page" id="page-payment">
+  <div class="checkout-layout">
+    <div>
+      <div class="checkout-steps">
+        <div class="checkout-step done"><span class="checkout-step-num">✓</span> Cart</div>
+        <div class="checkout-step done"><span class="checkout-step-num">✓</span> Login</div>
+        <div class="checkout-step done"><span class="checkout-step-num">✓</span> Delivery</div>
+        <div class="checkout-step active"><span class="checkout-step-num">4</span> Payment</div>
+        <div class="checkout-step"><span class="checkout-step-num">5</span> Confirm</div>
+      </div>
+      <h2 class="section-divider" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300">Payment Method</h2>
+      <div class="payment-methods">
+        <button type="button" class="pay-method active" onclick="selectPayMethod(this,'card')">💳 Card</button>
+        <button type="button" class="pay-method" onclick="selectPayMethod(this,'upi')">📱 UPI</button>
+        <button type="button" class="pay-method" onclick="selectPayMethod(this,'netbank')">🏦 Net Banking</button>
+        <button type="button" class="pay-method" onclick="selectPayMethod(this,'cod')">💵 COD</button>
+      </div>
+
+      <!-- Card Form -->
+      <div id="pay-card-form">
+        <div class="card-preview">
+          <div class="card-chip"></div>
+          <div class="card-number" id="preview-number">•••• •••• •••• ••••</div>
+          <div class="card-row">
+            <div>
+              <p class="card-label">Card Holder</p>
+              <p class="card-val" id="preview-name">YOUR NAME</p>
+            </div>
+            <div>
+              <p class="card-label">Expires</p>
+              <p class="card-val" id="preview-expiry">MM/YY</p>
+            </div>
+          </div>
+          <div class="card-network">💳</div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group span2">
+            <label class="form-label">Card Number</label>
+            <input class="form-input" type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="updateCardPreview(this,'number')">
+          </div>
+          <div class="form-group span2">
+            <label class="form-label">Card Holder Name</label>
+            <input class="form-input" type="text" placeholder="Arjun Sharma" oninput="updateCardPreview(this,'name')">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiry Date</label>
+            <input class="form-input" type="text" placeholder="MM/YY" maxlength="5" oninput="updateCardPreview(this,'expiry')">
+          </div>
+          <div class="form-group">
+            <label class="form-label">CVV</label>
+            <input class="form-input" type="password" placeholder="•••" maxlength="3">
+          </div>
+        </div>
+      </div>
+
+      <!-- UPI Form -->
+      <div id="pay-upi-form" class="hidden">
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">UPI ID</label>
+          <input class="form-input" type="text" placeholder="yourname [at] upi">
+        </div>
+        <p style="font-size:13px;color:var(--muted)">You will receive a payment request on your UPI app.</p>
+      </div>
+
+      <!-- Net Banking Form -->
+      <div id="pay-netbank-form" class="hidden">
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">Select Bank</label>
+          <select class="form-select" style="width:100%">
+            <option>State Bank of India</option>
+            <option>HDFC Bank</option>
+            <option>ICICI Bank</option>
+            <option>Axis Bank</option>
+            <option>Kotak Mahindra Bank</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- COD Info -->
+      <div id="pay-cod-form" class="hidden">
+        <div style="background:var(--cream);padding:20px;border-radius:3px;font-size:14px;line-height:1.7;color:var(--muted)">
+          <strong style="color:var(--ink)">Cash on Delivery</strong><br>
+          Pay when your order arrives. Available for orders under ₹5,000. An additional ₹49 COD charge applies.
+        </div>
+      </div>
+
+      <button type="button" class="place-order-btn" onclick="placeOrder()">Place Order Securely →</button>
+      <div class="secure-badge">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" fill="none" stroke-width="1.5"/></svg>
+        SSL secured · PCI DSS compliant
+      </div>
+    </div>
+
+    <div class="order-summary-panel">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin-bottom:20px">Order Summary</h3>
+      <div id="payment-items"></div>
+      <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
+        <div class="summary-row"><span>Subtotal</span><span id="pay-subtotal">₹0</span></div>
+        <div class="summary-row"><span>Shipping</span><span>Free</span></div>
+        <div class="summary-row"><span>GST (18%)</span><span id="pay-gst">₹0</span></div>
+        <div class="summary-row total"><span>Total</span><span id="pay-total">₹0</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== THANK YOU PAGE ==================== -->
+<div class="page" id="page-thankyou">
+  <div class="thankyou">
+    <div class="thankyou-inner">
+      <div class="ty-icon">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <p class="ty-tag">Order Confirmed</p>
+      <h1 class="ty-title">Thank You,<br><span id="ty-name">Friend</span>!</h1>
+      <p class="ty-subtitle">Your order has been received and is being lovingly packed. You'll receive a confirmation email shortly with tracking details.</p>
+      <div class="ty-order">
+        <div class="ty-order-row"><span>Order Number</span><strong id="ty-order-num">#FORM-2025-001</strong></div>
+        <div class="ty-order-row"><span>Estimated Delivery</span><strong>3–5 Business Days</strong></div>
+        <div class="ty-order-row"><span>Order Total</span><strong id="ty-amount">₹0</strong></div>
+        <div class="ty-order-row"><span>Payment</span><strong>Confirmed ✓</strong></div>
+      </div>
+      <div class="ty-steps">
+        <div class="ty-step">
+          <div class="ty-step-icon">
+            <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </div>
+          <strong>Processing</strong>
+          <p>Your order is being prepared for dispatch</p>
+        </div>
+        <div class="ty-step">
+          <div class="ty-step-icon">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+          <strong>Shipped</strong>
+          <p>Tracking link sent to your email</p>
+        </div>
+        <div class="ty-step">
+          <div class="ty-step-icon">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <strong>Delivered</strong>
+          <p>Enjoy your new FORM pieces</p>
+        </div>
+      </div>
+      <div class="ty-btns">
+        <button type="button" class="btn-primary" onclick="goTo('home')">Continue Shopping</button>
+        <button type="button" class="btn-outline" style="border-color:var(--ink);color:var(--ink)">Track Order</button>
+      </div>
+    </div>
+  </div>
+  <footer style="background:var(--ink);color:rgba(255,255,255,.4);padding:24px 40px;text-align:center;font-size:12px">
+    © 2025 Duke. All rights reserved.
+  </footer>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">Added to cart!</span>
+</div>
+
+<!-- Scroll to top -->
+<button type="button" class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script src="duke-app.js"></script>
+</body>
+</html>
